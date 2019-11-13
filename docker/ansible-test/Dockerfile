@@ -24,24 +24,29 @@ RUN python3.6 -m venv "${VENV}" \
         rstcheck \
         virtualenv \
         voluptuous \
-        yamllint \
-    && chmod -R a+rwX "${VENV}"/lib64/python*
+        yamllint
 
-# NOTE: https://stackoverflow.com/questions/42363105/permission-denied-mkdir-in-container-on-openshift
-RUN adduser user1 -G root
+# NOTE followed OpenShift advice: https://stackoverflow.com/a/42366425
+RUN useradd user1 \
+        --uid 1000 \
+        --no-create-home \
+        --gid root \
+    && mkdir -p -m 0775 /ansible_collections \
+    && chown user1:root /ansible_collections
 
-# Needed?
-# RUN chmod -R 775 /home/user1
-# RUN chown -R user1:root /home/user1
+# Update dir and permissions for where ansible-test sanity writes files
+# NOTE: if a sanity cli tool conditionally writes to a diff dir, it will fail
+RUN mkdir -m 0775 /.pylint.d \
+    && mkdir -m 0775 /.ansible \
+    && chmod -R 0775 "${VENV}"/lib64/python*
 
-VOLUME /collection_volume
+# TEMP: copy for testing purposes
+COPY google-gcp-1.0.0.tar.gz /
 
-# Needed?
-# RUN chmod 775 /collection_volume
+COPY entrypoint.sh /entrypoint
+RUN chmod +x /entrypoint
 
-COPY entrypoint.sh /
-RUN chmod +x /entrypoint.sh
-
+ENV HOME /
 USER 1000
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint"]
