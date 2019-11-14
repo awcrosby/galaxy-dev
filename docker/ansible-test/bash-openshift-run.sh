@@ -14,7 +14,8 @@
 #     --binary \
 #     --docker-image centos:centos7 \
 #     --name bin-ans-test
-# echo 'Start (or redo) binary build using local dir content'
+
+echo 'Start or rebuild binary build using local dir content'
 oc start-build bin-ans-test --from-dir . --follow
 
 # echo 'Get buildconfig and imagesstreams'
@@ -51,10 +52,8 @@ sleep 5
 echo 'Getting logs from job'
 oc logs jobs/bin-ans-test -f
 
-echo 'Deleting files...'
+# echo 'Deleting files...'
 oc delete job/bin-ans-test
-
-
 
 # # Get pod name and look at log output
 # oc get pods
