@@ -41,8 +41,7 @@ spec:
       containers:
       - name: bin-ans-test-container
         image: 172.30.1.1:5000/myproject/bin-ans-test
-        # command: ["ls"]
-      restartPolicy: OnFailure
+      restartPolicy: Never
 ' >> job.yaml
 oc create -f job.yaml
 rm job.yaml

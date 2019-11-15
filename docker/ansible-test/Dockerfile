@@ -26,11 +26,11 @@ RUN python3.6 -m venv "${VENV}" \
         voluptuous \
         yamllint
 
-# NOTE followed OpenShift advice: https://stackoverflow.com/a/42366425
 RUN useradd user1 \
         --uid 1000 \
         --no-create-home \
         --gid root \
+    && mkdir -m 0775 /archive \
     && mkdir -p -m 0775 /ansible_collections \
     && chown user1:root /ansible_collections
 
@@ -40,9 +40,6 @@ RUN mkdir -m 0775 /.pylint.d \
     && mkdir -m 0775 /.ansible \
     && chmod -R 0775 "${VENV}"/lib64/python*
 
-# TEMP: copy for testing purposes
-COPY google-gcp-1.0.0.tar.gz /
-
 COPY entrypoint.sh /entrypoint
 RUN chmod +x /entrypoint
 
@@ -50,3 +47,5 @@ ENV HOME /
 USER 1000
 
 ENTRYPOINT ["/entrypoint"]
+
+COPY google-gcp-1.0.0.tar.gz /archive
