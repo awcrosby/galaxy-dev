@@ -1,30 +1,4 @@
-FROM centos:7
-
-ENV PYTHONUNBUFFERED=1 \
-    LANG=en_US.UTF-8 \
-    VENV=/venv
-
-RUN yum -y install epel-release \
-    && yum -y install \
-        python36 \
-        python36-devel \
-    && yum -y clean all
-
-RUN python3.6 -m venv "${VENV}" \
-    && source "${VENV}/bin/activate" \
-    && pip --no-cache-dir install -U \
-        "pip<19.0" \
-        wheel \
-    && pip install ansible \
-        cryptography \
-        jinja2 \
-        pycodestyle \
-        pylint \
-        pyyaml \
-        rstcheck \
-        virtualenv \
-        voluptuous \
-        yamllint
+FROM quay.io/ansible/default-test-container
 
 RUN useradd user1 \
         --uid 1000 \
@@ -32,13 +6,15 @@ RUN useradd user1 \
         --gid root \
     && mkdir -m 0775 /archive \
     && mkdir -p -m 0775 /ansible_collections \
-    && chown user1:root /ansible_collections
+    && chown user1:root /ansible_collections \
+    && pip install ansible
 
 # Update dir and permissions for where ansible-test sanity writes files
-# NOTE: if a sanity cli tool conditionally writes to a diff dir, it will fail
-RUN mkdir -m 0775 /.pylint.d \
+# NOTE: if a sanity test conditionally writes to a different dir, it will fail
+RUN touch /usr/local/lib/python3.6/dist-packages/ansible.egg-info \
+    && chmod 0775 /usr/local/lib/python3.6/dist-packages/ansible.egg-info \
     && mkdir -m 0775 /.ansible \
-    && chmod -R 0775 "${VENV}"/lib64/python*
+    && mkdir -m 0775 /.pylint.d
 
 COPY entrypoint.sh /entrypoint
 RUN chmod +x /entrypoint
@@ -48,4 +24,4 @@ USER 1000
 
 ENTRYPOINT ["/entrypoint"]
 
-COPY google-gcp-1.0.0.tar.gz /archive
+COPY archive /archive

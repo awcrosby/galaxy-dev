@@ -18,6 +18,8 @@ mv placeholder_namespace/ $NAMESPACE
 cd /ansible_collections/$NAMESPACE/$NAME
 
 echo "Running ansible-test sanity..."
-/venv/bin/ansible-test sanity --color yes --failure-ok
+# "pslint" throws ScriptRequiresMissingModules for PSScriptAnalyzer
+# when container is not run as root
+ansible-test sanity --skip-test import --skip-test validate-modules --skip-test pslint --color yes --failure-ok
 
 exec "$@"
